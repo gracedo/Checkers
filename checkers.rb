@@ -1,11 +1,21 @@
 # coding: utf-8
 
+class InvalidMoveError < StandardError
+  attr_reader :message
+
+  def initialize
+    @message = "invalid move!"
+  end
+end
+
 class Game
   def initialize
   end
 end
 
 class Board
+  attr_accessor :board
+  
   def initialize
     @board = Array.new(8) { Array.new(8) }
     init_board
@@ -28,6 +38,20 @@ class Board
   end
   
   def dup
+    board_copy = Board.new
+    
+    @board.each_with_index do |row, i|
+      row.each_with_index do |piece, j|
+        unless piece.nil?
+          board_copy[[i, j]] = piece.dup
+          board_copy[[i, j]].board = board_copy
+        else
+          board_copy[[i, j]] = nil
+        end
+      end
+    end
+    
+    board_copy
   end
   
   def []=(pos, piece)
@@ -42,6 +66,7 @@ end
 
 class Piece
   attr_reader :color, :pos, :type, :icon
+  attr_writer :board
   
   def initialize(color, pos, board, type = :pawn)
     @color = color
@@ -74,8 +99,6 @@ class Piece
   end
   
   def perform_slide(end_pos)
-    # move forward diagonally, two possible directions if pawn
-
     possible_moves = []
     self.move_dirs.each do |delta_x, delta_y|
       next_pos = [@pos[0] + delta_x, @pos[1] + delta_y]
@@ -94,8 +117,11 @@ class Piece
       self.maybe_promote(end_pos)
       return
     else
-      #raise error: invalid move
+      raise InvalidMoveError
+      return false
     end
+    
+    true
   end
   
   def perform_jump(end_pos)
@@ -124,28 +150,46 @@ class Piece
         self.maybe_promote(end_pos)
         return
       else
-        # raise error: invalid move
+        raise InvalidMoveError
+        return false
       end
     end
-  end
-  
-  def perform_moves(move_seq)
-    #run loop of all moves as wrapper for valid moves?
-  end
-  
-  def perform_moves!
-  end
-  
-  def valid_moves?(move_seq)
-    possible_moves = []
     
-    # @move_dir.each do |delta_x, delta_y|
-    #   next_pos = [@pos[0] + delta_x, @pos[1] + delta_y]
-    #   possible_moves << next_pos if @board[next_pos].nil
-    # end
-      
-    possible_moves.include?(end_pos)
+    true
   end
+  
+  # def perform_moves(move_seq)
+  #   if valid_move_seq?(move_seq)
+  #     perform_moves!(move_seq, @board)
+  #   else
+  #     raise InvalidMoveError
+  #   end
+  #   
+  #   true
+  # end
+  # 
+  # def perform_moves!(move_seq, board)
+  #   #run loop of all moves as wrapper for valid moves?
+  #   if move_seq.length == 1
+  #     perform_slide(move_seq[0])
+  #   end
+  #   
+  #   move_seq.each do |end_pos|
+  #     if valid_moves?(end_pos)
+  #     end
+  #   end
+  # end
+  # 
+  # def valid_moves?(move_seq)
+  #   duped_board = @board.dup
+  #   move_seq.each do |end_pos|
+  #     perform_moves!(end_pos, duped_board)
+  #     #call move on duped_board
+  #     #return false if error is raised
+  #   end
+  #   
+  #   true
+  # end
   
   def maybe_promote(end_pos)
     if @type == :pawn
@@ -166,6 +210,7 @@ class Piece
   end
   
   def dup
+    Piece.new(@color, @pos.dup, @board, @type)
   end
 end
 
@@ -180,18 +225,22 @@ b[[1,3]] = p
 b[[0,6]] = p2
 b[[6,5]] = pk
 b.show_board
-puts "-----------------"
-puts "PERFORMING SLIDE TO [1,5]"
-p2.perform_slide([1,5])
-b.show_board
-puts "-----------------"
-puts "PERFORMING JUMP TO [2,2]"
-pb.perform_jump([2,2])
-b.show_board
-puts "-----------------"
-puts "PERFORMING SLIDE AND PROMOTE TO KING TO [7,4]"
-pk.perform_slide([7,4])
-b.show_board
 
+# puts "PERFORMING SLIDE TO [1,5]"
+# p2.perform_slide([1,5])
+# b.show_board
+# puts "-----------------"
+# puts "PERFORMING JUMP TO [2,2]"
+# pb.perform_jump([2,2])
+# b.show_board
+# puts "-----------------"
+# puts "PERFORMING SLIDE AND PROMOTE TO KING TO [7,4]"
+# pk.perform_slide([7,4])
+# b.show_board
 
+c = b.dup
+c.show_board
+b[[0,0]] = Piece.new(:black, [0, 0], b)
+b.show_board
+c.show_board
 
