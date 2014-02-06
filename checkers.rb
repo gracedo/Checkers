@@ -18,7 +18,7 @@ class Board
   
   def initialize
     @board = Array.new(8) { Array.new(8) }
-    init_board
+    #init_board
   end
   
   def init_board
@@ -33,7 +33,7 @@ class Board
           self[[i, j]] = Piece.new(:black, [i,j], self) if j % 2 == n
         end
       end
-      n = (n == 0 ? 1 : 0)
+      n = (n == 0 ? 1 : 0) # for alternating locations
     end
   end
   
@@ -129,7 +129,7 @@ class Piece
       self.maybe_promote(end_pos)
       return
     else
-      raise InvalidMoveError
+        raise InvalidMoveError
       return false
     end
     
@@ -160,27 +160,30 @@ class Piece
       
         # promote pawn to king if end_pos is at opposite row
         self.maybe_promote(end_pos)
-        return
+        return true
       else
         raise InvalidMoveError
         return false
       end
     end
-    
-    true
   end
   
   def perform_moves(move_seq)
-    if valid_moves?(move_seq)
-      perform_moves!(move_seq)
-    else
-      raise InvalidMoveError
+    begin
+      if valid_moves?(move_seq)
+        perform_moves!(move_seq)
+      else
+        raise InvalidMoveError
+      end
+    rescue InvalidMoveError => e
+      puts "ERROR: #{e.message}"
     end
     
     true
   end
   
   def perform_moves!(move_seq)
+    #puts "entering perform_moves!"
     #run loop of all moves as wrapper for valid moves?
     if move_seq.length == 1
       if perform_slide(move_seq[0])
@@ -195,7 +198,8 @@ class Piece
     
     # if multiple moves long
     move_seq.each do |end_pos|
-      unless perform_jump(end_pos)
+      if !perform_jump(end_pos)
+        puts "raising an error at perform_jump in perform_moves! #{end_pos}"
         raise InvalidMoveError
         return false
       end
@@ -206,8 +210,8 @@ class Piece
   
   def valid_moves?(move_seq)
     duped_board = @board.dup
-    
-    return duped_board[@pos].perform_moves!(end_pos, duped_board)
+
+    return duped_board[@pos].perform_moves!(move_seq)
   end
   
   def maybe_promote(end_pos)
@@ -235,14 +239,17 @@ end
 
 b = Board.new
 
-# pb = Piece.new(:white, [0,4], b)
-# p = Piece.new(:black, [1, 3], b)
-# p2 = Piece.new(:white, [0, 6], b)
-# pk = Piece.new(:white, [6,5], b)
-# b[[0,4]] = pb
-# b[[1,3]] = p
-# b[[0,6]] = p2
-# b[[6,5]] = pk
+w = Piece.new(:white, [0,0], b)
+b1 = Piece.new(:black, [1, 1], b)
+b2 = Piece.new(:black, [3,3], b)
+b3 = Piece.new(:black, [5,5], b)
+b[[0,0]] = w
+b[[1,1]] = b1
+b[[3,3]] = b2
+b[[5,5]] = b3
+b.show_board
+
+w.perform_moves([[2,2],[4,4],[6,6]])
 b.show_board
 
 # p2.perform_slide([1,5])
