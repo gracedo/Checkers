@@ -22,7 +22,19 @@ class Board
   end
   
   def init_board
-    #
+    n = 0
+    
+    @board.each_with_index do |row, i|
+      next if i > 2 and i < 5
+      row.each_with_index do |col, j|
+        if i < 3
+          self[[i, j]] = Piece.new(:white, [i,j], self) if j % 2 != n
+        elsif i > 4
+          self[[i, j]] = Piece.new(:black, [i,j], self) if j % 2 == n
+        end
+      end
+      n = (n == 0 ? 1 : 0)
+    end
   end
   
   def show_board
@@ -158,38 +170,45 @@ class Piece
     true
   end
   
-  # def perform_moves(move_seq)
-  #   if valid_move_seq?(move_seq)
-  #     perform_moves!(move_seq, @board)
-  #   else
-  #     raise InvalidMoveError
-  #   end
-  #   
-  #   true
-  # end
-  # 
-  # def perform_moves!(move_seq, board)
-  #   #run loop of all moves as wrapper for valid moves?
-  #   if move_seq.length == 1
-  #     perform_slide(move_seq[0])
-  #   end
-  #   
-  #   move_seq.each do |end_pos|
-  #     if valid_moves?(end_pos)
-  #     end
-  #   end
-  # end
-  # 
-  # def valid_moves?(move_seq)
-  #   duped_board = @board.dup
-  #   move_seq.each do |end_pos|
-  #     perform_moves!(end_pos, duped_board)
-  #     #call move on duped_board
-  #     #return false if error is raised
-  #   end
-  #   
-  #   true
-  # end
+  def perform_moves(move_seq)
+    if valid_moves?(move_seq)
+      perform_moves!(move_seq)
+    else
+      raise InvalidMoveError
+    end
+    
+    true
+  end
+  
+  def perform_moves!(move_seq)
+    #run loop of all moves as wrapper for valid moves?
+    if move_seq.length == 1
+      if perform_slide(move_seq[0])
+        return true
+      elsif perform_jump(move_seq[0])
+        return true
+      else
+        raise InvalidMoveError
+        return false
+      end
+    end
+    
+    # if multiple moves long
+    move_seq.each do |end_pos|
+      unless perform_jump(end_pos)
+        raise InvalidMoveError
+        return false
+      end
+    end
+    
+    true
+  end
+  
+  def valid_moves?(move_seq)
+    duped_board = @board.dup
+    
+    return duped_board[@pos].perform_moves!(end_pos, duped_board)
+  end
   
   def maybe_promote(end_pos)
     if @type == :pawn
@@ -216,31 +235,23 @@ end
 
 b = Board.new
 
-pb = Piece.new(:white, [0,4], b)
-p = Piece.new(:black, [1, 3], b)
-p2 = Piece.new(:white, [0, 6], b)
-pk = Piece.new(:white, [6,5], b)
-b[[0,4]] = pb
-b[[1,3]] = p
-b[[0,6]] = p2
-b[[6,5]] = pk
+# pb = Piece.new(:white, [0,4], b)
+# p = Piece.new(:black, [1, 3], b)
+# p2 = Piece.new(:white, [0, 6], b)
+# pk = Piece.new(:white, [6,5], b)
+# b[[0,4]] = pb
+# b[[1,3]] = p
+# b[[0,6]] = p2
+# b[[6,5]] = pk
 b.show_board
 
-# puts "PERFORMING SLIDE TO [1,5]"
 # p2.perform_slide([1,5])
 # b.show_board
-# puts "-----------------"
-# puts "PERFORMING JUMP TO [2,2]"
+
 # pb.perform_jump([2,2])
 # b.show_board
-# puts "-----------------"
-# puts "PERFORMING SLIDE AND PROMOTE TO KING TO [7,4]"
+
 # pk.perform_slide([7,4])
 # b.show_board
 
-c = b.dup
-c.show_board
-b[[0,0]] = Piece.new(:black, [0, 0], b)
-b.show_board
-c.show_board
 
