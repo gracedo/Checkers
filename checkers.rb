@@ -21,28 +21,32 @@ class Game
   end
   
   def play
-    @board.show_board
-    puts "#{@curr_player.name}'s turn"
-    puts "Please select a piece (its location on the board, e.g. 0,0):"
-    start_pos = gets.chomp!.split(',')
-    start_pos = [start_pos[0].to_i, start_pos[1].to_i]
-    start_piece = @board[start_pos]
+    until game_over?
+      @board.show_board
+      puts "#{@curr_player.name}'s turn"
+      puts "Please select a piece (its location on the board, e.g. 00 for [0,0]):"
+      start_pos = gets.chomp!.split('')
+      start_pos = [start_pos[0].to_i, start_pos[1].to_i]
+      start_piece = @board[start_pos]
     
-    puts "Please select destination (e.g. 1,1):"
-    end_pos = gets.chomp!.split(',')
-    end_pos = [end_pos[0].to_i, end_pos[1].to_i]
+      puts "Please select your destination(s) (e.g. 11,22 for [1,1],[2,2]):"
+      end_pos = gets.chomp!.split(',')
+      end_pos.map! do |pos|
+        [pos[0].to_i, pos[1].to_i]
+      end
     
-    p start_pos
-    p end_pos
-    
-    #until game is over
-    #play game
-    #at end of turn/loop, switch current player
+      p start_pos
+      p end_pos
+      #p @board.pieces_left?(@curr_player.color)
+      
+      #switch player
+      @curr_player = (@curr_player == @player1 ? @player2 : @player1 )
+    end
   end
   
   def game_over?
     #no more pieces of one color left or no more moves remaining
-    
+    !@board.pieces_left?(@curr_player.color) || !@board.moves_left?(@curr_player.color)
   end
 end
 

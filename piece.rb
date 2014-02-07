@@ -67,7 +67,7 @@ class Piece
       next unless inbound?(next_pos)
       
       # If ending position is empty and the piece to jump over is opponent's piece, it is a valid move
-      if @board[next_pos].nil? and !@board[mid_pos].nil? and @board[mid_pos].color != @color #need another nil check, will hit error?
+      if @board[next_pos].nil? and !@board[mid_pos].nil? and @board[mid_pos].color != @color
         possible_moves << [next_pos, mid_pos]
       end
     end
@@ -88,6 +88,32 @@ class Piece
         return false
       end
     end
+  end
+  
+  def all_possible_moves
+    possible_moves = []
+    
+    self.move_dirs.each do |delta_x, delta_y|
+      #sliding possibilities
+      next_pos = [@pos[0] + delta_x, @pos[1] + delta_y]
+      next unless inbound?(next_pos)
+      possible_moves << next_pos if @board[next_pos].nil?
+    
+      #jumping possibilities
+      next_pos = [@pos[0] + delta_x*2, @pos[1] + delta_y*2]
+      mid_pos = [@pos[0] + delta_x, @pos[1] + delta_y]
+
+      next unless inbound?(next_pos)
+      
+      # If ending position is empty and the piece to jump over is opponent's piece, it is a valid move
+      if @board[next_pos].nil? and !@board[mid_pos].nil? and @board[mid_pos].color != @color
+        possible_moves << [next_pos, mid_pos]
+      end
+    end
+    
+    #p possible_moves
+    
+    possible_moves
   end
   
   def perform_moves(move_seq)

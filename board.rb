@@ -51,6 +51,34 @@ class Board
     board_copy
   end
   
+  def get_pieces(color)
+    pieces = []
+    
+    @board.each_with_index do |row, i|
+      row.each_with_index do |tile, j|
+        unless tile.nil?
+          pieces << tile if tile.color == color
+        end
+      end
+    end
+    
+    #p pieces.length
+    pieces
+  end
+  
+  def pieces_left?(color)
+    !get_pieces(color).empty?
+  end
+  
+  def moves_left?(color)
+    get_pieces(color).each do |piece|
+      #puts "p"
+      return true if !piece.all_possible_moves.empty?
+    end
+    
+    false
+  end
+  
   def []=(pos, piece)
     @board[pos[0]][pos[1]] = piece
   end
