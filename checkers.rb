@@ -7,7 +7,7 @@ class InvalidMoveError < StandardError
   attr_reader :message
 
   def initialize
-    @message = "invalid move!"
+    @message = "Error: invalid move!"
   end
 end
 
@@ -30,6 +30,7 @@ class Game
         start_pos = gets.chomp!.split('')
         start_pos = [start_pos[0].to_i, start_pos[1].to_i]
         start_piece = @board[start_pos]
+        
         raise InvalidMoveError if start_piece.nil?
         raise InvalidMoveError if start_piece.color != @curr_player.color
   
@@ -39,8 +40,7 @@ class Game
           [pos[0].to_i, pos[1].to_i]
         end
         
-        #@curr_player.play_turn(start_piece, end_pos)
-        start_piece.perform_moves(end_pos)
+        start_piece.perform_moves(end_pos) # Play the move
     
         @board.show_board
         @curr_player = (@curr_player == @player1 ? @player2 : @player1 )
@@ -48,10 +48,17 @@ class Game
         puts e.message
       end
     end
+    
+    if !@board.pieces_left?(@curr_player.color)
+      winner = (@curr_player == @player1 ? @player2 : @player1 )
+      puts "Game over!! No more moves for #{@curr_player.name}."
+      puts "The winner is #{winner}!!"
+    else
+      puts "Stalemate game, no moves remaining."
+    end
   end
   
   def game_over?
-    #no more pieces of one color left or no more moves remaining
     !@board.pieces_left?(@curr_player.color) || !@board.moves_left?(@curr_player.color)
   end
 end
@@ -63,13 +70,6 @@ class Player
     @color = color
     @board = board
   end
-  
-  # def play_turn(start_piece, end_pos)
- #    # raise InvalidMoveError if @board[start_pos].nil?
- #    #raise InvalidMoveError if start_piece.color != @color
- #    
- #    start_piece.perform_moves(end_pos)
- #  end
 end
 
 class HumanPlayer < Player
@@ -86,30 +86,4 @@ class HumanPlayer < Player
   end
 end
 
-# b = Board.new
-
-g = Game.new
-
-# w = Piece.new(:white, [0,0], b)
-# b1 = Piece.new(:black, [1, 1], b)
-# b2 = Piece.new(:black, [3,3], b)
-# b3 = Piece.new(:black, [5,5], b)
-# b[[0,0]] = w
-# b[[1,1]] = b1
-# b[[3,3]] = b2
-# b[[5,5]] = b3
-# b.show_board
-# 
-# w.perform_moves([[2,2],[4,4],[6,6]])
-# b.show_board
-
-# p2.perform_slide([1,5])
-# b.show_board
-
-# pb.perform_jump([2,2])
-# b.show_board
-
-# pk.perform_slide([7,4])
-# b.show_board
-
-
+# g = Game.new
