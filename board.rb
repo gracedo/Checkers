@@ -62,7 +62,6 @@ class Board
       end
     end
     
-    #p pieces.length
     pieces
   end
   
@@ -72,7 +71,6 @@ class Board
   
   def moves_left?(color)
     get_pieces(color).each do |piece|
-      #puts "p"
       return true if !piece.all_possible_moves.empty?
     end
     
