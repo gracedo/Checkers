@@ -86,4 +86,4 @@ class HumanPlayer < Player
   end
 end
 
-# g = Game.new
+ g = Game.new

@@ -1,3 +1,5 @@
+require 'colorize'
+
 class Board
   attr_accessor :board
   
@@ -23,12 +25,20 @@ class Board
   end
   
   def show_board
+    white = false
     puts "   0  1  2  3  4  5  6  7"
     @board.each_with_index do |row, i|
       print "#{i} "
       row.each_with_index do |col, j|
-        col.nil? ? print(" _ ") : print(" #{col.icon} ")
+        if white
+          col.nil? ? print("   ".on_green) : print(" #{col.icon} ".on_green)
+          white = !white
+        else
+          col.nil? ? print("   ") : print(" #{col.icon} ")
+          white = !white
+        end
       end
+      white = !white
       puts " #{i}"
     end
     puts "   0  1  2  3  4  5  6  7"
